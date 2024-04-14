@@ -2,30 +2,7 @@ from fastapi import FastAPI, Request, HTTPException
 from pydantic import BaseModel
 import joblib
 import logging
-'''
-# Load your model
-model_path = "best_model_SVM.pkl"
-loaded_model = joblib.load(model_path)
-
-app = FastAPI()
-
-class Query(BaseModel):
-    fields: dict
-
-@app.post("/validate/")
-async def validate_query(query: Query):
-    # Iterate through each field to predict
-    responses = {}
-    for key, value in query.fields.items():
-        if not isinstance(value, str):  # Ensure the value is a string
-            continue
-        # Predict using the loaded model
-        prediction = loaded_model.predict([value])
-        # Assuming 1 for SQL Injection and 0 for No Injection
-        responses[key] = "SQL Injection Detected" if prediction[0] == 1 else "No Injection Detected"
-    return {"results": responses}
-'''
-# Setup logging
+from fastapi.middleware.cors import CORSMiddleware
 logging.basicConfig(filename='sql_injection_logs.log', level=logging.INFO,
                     format='%(asctime)s:%(levelname)s:%(message)s')
 
@@ -34,7 +11,13 @@ model_path = "best_model_SVM.pkl"
 loaded_model = joblib.load(model_path)
 
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"]   # Allows all headers
+)
 class Query(BaseModel):
     fields: dict
 
