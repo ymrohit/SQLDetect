@@ -20,7 +20,7 @@ app.add_middleware(
 )
 class Query(BaseModel):
     fields: dict
-
+SAFE_WORDS = {"admin", "user"}
 def detect_sql_injection(request: Request, data: dict):
     client_ip = request.client.host
     user_agent = request.headers.get('user-agent')
@@ -28,9 +28,14 @@ def detect_sql_injection(request: Request, data: dict):
     for key, value in data.items():
         if not isinstance(value, str):  # Ensure the value is a string
             continue
+        #print(f"Checking field {key} with value '{value}'")
+        if value.strip().lower()  in SAFE_WORDS:
+            responses[key] = "No Injection Detected"
+            continue
         prediction = loaded_model.predict([value])
         if prediction[0] == 1:
-            logging.info(f"SQL Injection Detected: IP={client_ip}, User-Agent={user_agent}, Field={key}, Value={value}")
+            logging.info(
+                    f"SQL Injection Detected: IP={client_ip}, User-Agent={user_agent}, Field={key}, Value={value}")
             responses[key] = "SQL Injection Detected"
         else:
             responses[key] = "No Injection Detected"
@@ -39,6 +44,7 @@ def detect_sql_injection(request: Request, data: dict):
 @app.post("/validate/")
 async def validate_query(request: Request, query: Query):
     results = detect_sql_injection(request, query.fields)
+    print(query.fields)
     return {"results": results}
 
 @app.get("/validate/")
