@@ -7,7 +7,7 @@ logging.basicConfig(filename='sql_injection_logs.log', level=logging.INFO,
                     format='%(asctime)s:%(levelname)s:%(message)s')
 
 # Load your model
-model_path = "best_model_SVM.pkl"
+model_path = "best_model_SVM_V2.pkl"
 loaded_model = joblib.load(model_path)
 
 app = FastAPI()
